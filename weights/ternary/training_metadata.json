@@ -1,0 +1,32 @@
+{
+  "version": "final",
+  "task": "ternary_infant_distress",
+  "classes": {
+    "0": "non-distress",
+    "1": "fuss",
+    "2": "cry"
+  },
+  "window_seconds": 5,
+  "overlap_seconds": 4,
+  "sample_rate": 16000,
+  "features": "YAMNet",
+  "classifier": "RBF SVM",
+  "balance": "RandomUnderSampler",
+  "pca": "n_components=0.90",
+  "pca_n_components_fitted": 175,
+  "svm_classes": [
+    0,
+    1,
+    2
+  ],
+  "n_samples_raw": 212623,
+  "n_samples_balanced_per_class": 9730,
+  "trained_at": "2026-09-18T22:18:17",
+  "data": "ahsans + ahsans_labels_filtered (167 wav/csv pairs)",
+  "github_files": [
+    "svm_model.pkl",
+    "scaler.pkl",
+    "pca.pkl"
+  ],
+  "note": "3-way model for GitHub. Merge 1+2 for binary distress. Do not include embedding_cache."
+}

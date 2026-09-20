@@ -1,0 +1,9 @@
+librosa
+numpy
+pandas
+tensorflow
+tensorflow-hub
+joblib
+scikit-learn
+imbalanced-learn
+tqdm

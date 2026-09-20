@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+__MACOSX/
+.DS_Store
+*.pyc
+embedding_cache/
+finetuned_binary/
+finetuned_ternary/
+finetuned_models/
+saved_models/
+saved_models_ternary/
+saved_models_ternary_final/
