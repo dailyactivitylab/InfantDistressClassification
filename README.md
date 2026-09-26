@@ -17,7 +17,8 @@ Code: [github.com/dailyactivitylab/InfantDistressClassification](https://github.
 |------|------|
 | [`weights/binary/`](weights/binary) | **2-way weights.** `0` = non-distress, `1` = distress (fuss and cry already merged). |
 | [`weights/ternary/`](weights/ternary) | **3-way weights.** `0` = non-distress, `1` = fuss, `2` = cry. |
-| [`predict.py`](predict.py) | Run either model on a WAV file. |
+| [`predict.py`](predict.py) | Run either model on a WAV file. Optional `--min_distress_sec` to drop short bursts. |
+| [`clean_short_distress.py`](clean_short_distress.py) | Optional: turn 1–3 s distress runs into non-distress. |
 | [`fine_tune_binary.py`](fine_tune_binary.py) | Adapt the 2-way model on your labeled clips. |
 | [`fine_tune_ternary.py`](fine_tune_ternary.py) | Adapt the 3-way model on your labeled clips. |
 | [`examples/test.wav`](examples/test.wav) | Short sample clip. |
@@ -76,6 +77,19 @@ python predict.py --audio examples/test.wav --mode ternary
 ```bash
 python predict.py --audio path/to/file.wav --mode ternary --model_dir ./finetuned_ternary
 ```
+
+### Short 1–3 s distress bursts
+
+The paper pipeline uses **5 s windows with 4 s overlap**. A brief rustle, clothing on the microphone, or another distress-like sound can flip several overlapping windows and appear as a **1–3 second** fuss/cry streak. Some of those events are real short distress; many in home audio are not.
+
+Default `predict.py` does **not** remove them (same as the paper). If you want longer episodes only:
+
+```bash
+python predict.py --audio examples/test.wav --mode ternary --min_distress_sec 3
+python clean_short_distress.py --csv path/to/labels.csv --min_sec 3
+```
+
+That sets any fuss/cry run shorter than 3 s to `0`. It is an optional cleanup, not part of the published LOPO numbers.
 
 Or in Python (same windowing as the paper: 5 s + 4 s overlap):
 
@@ -157,7 +171,7 @@ Both scripts reuse the released **scaler + PCA** and train a **new RBF SVM** on 
 
 ## Method (paper)
 
-- Compared 1 s, 5 s, and **5 s + 4 s overlap**; overlapping 5 s windows were used for all experiments.
+- Compared 1 s, 5 s, and **5 s + 4 s overlap**; overlapping 5 s windows were used for all experiments. Short predicted bursts can be filtered after the fact; see above.
 - Class imbalance: **random undersampling**.
 - Evaluation in the paper: **leave-one-participant-out (LOPO-CV)**.
 - Features: YAMNet embeddings, **PCA (~90% variance)**, **RBF SVM**.

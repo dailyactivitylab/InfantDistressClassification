@@ -43,6 +43,23 @@ def extract_features(chunks, yamnet_model):
     return np.array(embeddings)
 
 
+def drop_short_distress(labels, min_sec=3):
+    """Set fuss/cry runs shorter than min_sec to 0. Optional post-filter, not used in the paper."""
+    out = [int(x) for x in labels]
+    i, n = 0, len(out)
+    while i < n:
+        if out[i] == 0:
+            i += 1
+            continue
+        j = i
+        while j < n and out[j] != 0:
+            j += 1
+        if j - i < min_sec:
+            out[i:j] = [0] * (j - i)
+        i = j
+    return out
+
+
 def majority_vote(preds, chunk_size=5, overlap=4):
     per = {}
     hop = chunk_size - overlap
@@ -73,6 +90,13 @@ def main():
         default="binary",
         help="binary: 0/1 distress. ternary: 0/1/2 fuss vs cry",
     )
+    parser.add_argument(
+        "--min_distress_sec",
+        type=int,
+        default=0,
+        help="If > 0, drop fuss/cry runs shorter than this many seconds "
+        "(optional cleanup; 0 keeps the paper output)",
+    )
     args = parser.parse_args()
     if args.model_dir is None:
         args.model_dir = os.path.join("weights", args.mode)
@@ -92,6 +116,8 @@ def main():
     voted = majority_vote(raw)
     n = min(len(voted), int(len(audio) / SAMPLE_RATE) or len(voted))
     voted = voted[:n]
+    if args.min_distress_sec > 0:
+        voted = drop_short_distress(voted, args.min_distress_sec)
 
     print(f"File: {args.audio}")
     print(f"Seconds: {n}  |  SVM classes: {list(svm.classes_)}")
